@@ -2,7 +2,7 @@
 
 ## About
 
-While heat transport at large scales follows Fouriers law, at the level of nanoscale
+While heat transport at large scales follows Fourier's law, at the level of nanoscale
 systems, heat transport becomes anomolous. Defining rigorously even what is meant
 by temperature of a system at these scales away from equilibrium is non-trivial.
 
