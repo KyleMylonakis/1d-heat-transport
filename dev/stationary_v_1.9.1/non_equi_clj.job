@@ -1,0 +1,8 @@
+#!/bin/bash
+#PBS -l nodes=1:ppn=10:v2
+#PBS -l walltime=96:00:00
+
+cd $PBS_O_WORKDIR
+export OMP_NUM_THREADS=10
+
+./dynamics &> log_dynamics.txt
