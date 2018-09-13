@@ -25,11 +25,11 @@ Only the first two of the above systems are included in this repo.
 
 If in Linux, simply run the Makefile in either the directory
 
-/dev/non_stationary_v_1.5
+/dev/non_stationary_v_1.5.x
 
 or
 
-/dev/stationary_v_1.9.
+/dev/stationary_v_1.9.x
 
 Running the code results dumps several csv files. For large systems with long run
 times these files can be up to gigs in size. The run time for these systems
