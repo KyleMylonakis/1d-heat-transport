@@ -1,0 +1,13 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2018 The MathWorks, Inc.
+                   R2018b (9.5.0.944444) 64-bit (glnxa64)
+                              August 28, 2018
+
+ 
+For online documentation, see https://www.mathworks.com/support
+For product information, visit www.mathworks.com.
+ 
+[Warning: Rank deficient, rank = 54, tol =  1.422411e-07.] 
+[> In matrix_pencil_no_plot (line 71)] 
+>> 
