@@ -17,18 +17,18 @@ const int mod_time_step {1};
 //extern const double g_dt {(2*27.0)/3267.0 * mod_time_step}; // Time step of the simulation
 extern const double g_dt {0.001 * mod_time_step}; // Time step of the simulation
 const int dt_inv {static_cast<int>(1/g_dt)};      // Must be 1/dt as an int
-const int t_max {100};        // Final time of the simulation
+const int t_max {10};        // Final time of the simulation
 extern const double g_k_sqrd {156*pow(2,-7.0/3.0) - 42*pow(2, -4.0/3.0) }; // Coming from the second derivative of the Lennard Jones 
 extern const double g_k {sqrt(g_k_sqrd)}; // Coming from the second derivative of the Lennard Jones 
 extern const double a0 {pow(2,1.0/6.0)}; // Equilibrium spacing
 //const int n_particles {100};      // The number of particles in the resolved system // YOU NEED TO CHANGE THIS OVER IN FUNCTIONS.CPP AS WELL
 //extern const int n_particles {100};      // The number of particles in the resolved system // YOU NEED TO CHANGE THIS OVER IN FUNCTIONS.CPP AS WELL
-extern const int n_particles {1024};      // FOR DEBUGGING ONLY
+extern const int n_particles {16};      // FOR DEBUGGING ONLY
 extern const long long int total_steps {dt_inv*t_max + 1}; // Number of steps in the simulation
 int const t_equi {t_max/2};          // Time until "equilibriation". The time when I start sampling the data
 long long int const steps_to_equi {t_equi *dt_inv + 1}; // Number of steps until "equilibriation"
 int const sample_freq {dt_inv/10};      // Sample frequency after equilibriation
-long long int const total_samples { (t_max -t_equi)*sample_freq }; // Total number of samples
+long long int const total_samples { (t_max -t_equi)*(dt_inv/sample_freq) }; // Total number of samples
 int const n_int_particles {n_particles -2};
 //const int n_bath_particles {9000}; // Number of particles being sampled in the baths. Must be the same as in functions.cpp as well
 //extern const long long int n_bath_particles {53900}; // Number of particles being sampled in the baths. Must be the same as in functions.cpp as well
@@ -38,8 +38,8 @@ double trunc_theta_norm {0}; // The value of the integral of theta from 0 to dt*
 const int eigth_grid_steps {17};
 const int quarter_grid_steps {eigth_grid_steps/2 + 1}; // This uses int division
 const int half_grid_steps {quarter_grid_steps/2 + 1}; // This uses int division
-const double left_temp {0.2};
-const double right_temp {0.8};
+const double left_temp {2.0};
+const double right_temp {8.0};
 
 extern const double r {0.99};
 extern const double epsilon {pow(10.0,-16)};

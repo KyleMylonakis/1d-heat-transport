@@ -13,18 +13,18 @@
 // Initialize the constants
 extern const double g_dt {0.001}; // Time step of the simulation
 const int dt_inv {static_cast<int>(1/g_dt)};      // Must be 1/dt as an int
-const int t_max {100};        // Final time of the simulation
+const int t_max {10};        // Final time of the simulation
 extern const double g_k_sqrd {156*pow(2,-7.0/3.0) - 42*pow(2, -4.0/3.0) }; // Coming from the second derivative of the Lennard Jones 
 extern const double g_k {sqrt(g_k_sqrd)}; // Coming from the second derivative of the Lennard Jones 
 extern const double a0 {pow(2,1.0/6.0)}; // Equilibrium spacing
 //const int n_particles {100};      // The number of particles in the resolved system // YOU NEED TO CHANGE THIS OVER IN FUNCTIONS.CPP AS WELL
 //extern const int n_particles {100};      // The number of particles in the resolved system // YOU NEED TO CHANGE THIS OVER IN FUNCTIONS.CPP AS WELL
-extern const int n_particles {1024};      // FOR DEBUGGING ONLY
+extern const int n_particles {16};      // FOR DEBUGGING ONLY
 extern const long long int total_steps {dt_inv*t_max + 1}; // Number of steps in the simulation
 int const t_equi {t_max/2};          // Time until "equilibriation". The time when I start sampling the data
 long long int const steps_to_equi {t_equi *dt_inv + 1}; // Number of steps until "equilibriation"
 int const sample_freq {dt_inv/10};      // Sample frequency after equilibriation
-long long int const total_samples { (t_max -t_equi)*sample_freq }; // Total number of samples
+long long int const total_samples { (t_max -t_equi)*(dt_inv/sample_freq) }; // Total number of samples
 int const n_int_particles {n_particles -2};
 //const int n_bath_particles {9000}; // Number of particles being sampled in the baths. Must be the same as in functions.cpp as well
 extern const long long int n_bath_particles {90000}; // Number of particles being sampled in the baths. Must be the same as in functions.cpp as well
