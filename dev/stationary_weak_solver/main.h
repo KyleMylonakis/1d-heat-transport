@@ -17,7 +17,7 @@ const int mod_time_step {1};
 //extern const double g_dt {(2*27.0)/3267.0 * mod_time_step}; // Time step of the simulation
 extern const double g_dt {0.001 * mod_time_step}; // Time step of the simulation
 const int dt_inv {static_cast<int>(1/g_dt)};      // Must be 1/dt as an int
-const int t_max {10};        // Final time of the simulation
+const int t_max {10000};        // Final time of the simulation
 extern const double g_k_sqrd {156*pow(2,-7.0/3.0) - 42*pow(2, -4.0/3.0) }; // Coming from the second derivative of the Lennard Jones 
 extern const double g_k {sqrt(g_k_sqrd)}; // Coming from the second derivative of the Lennard Jones 
 extern const double a0 {pow(2,1.0/6.0)}; // Equilibrium spacing
@@ -38,8 +38,11 @@ double trunc_theta_norm {0}; // The value of the integral of theta from 0 to dt*
 const int eigth_grid_steps {17};
 const int quarter_grid_steps {eigth_grid_steps/2 + 1}; // This uses int division
 const int half_grid_steps {quarter_grid_steps/2 + 1}; // This uses int division
-const double left_temp {2.0};
-const double right_temp {8.0};
+extern const double left_temp {0.002};
+extern const double right_temp {0.008};
+extern const double avg_init_temp {(left_temp + right_temp)/2.0};
+double first_initial_pos {0.0};
+double last_initial_pos {0.0};
 
 extern const double r {0.99};
 extern const double epsilon {pow(10.0,-16)};
@@ -47,6 +50,7 @@ extern const double epsilon {pow(10.0,-16)};
 extern const double T {0.001};
 extern const double Tc {T * sqrt(log(r)/log(epsilon))};
 extern const long long int max_trap_steps {2*(static_cast<long long int>(Tc * dt_inv)/2) + 1 }; // Max number of steps to take for the trapezoidal rule
+
 
 
 // Allocate the Arrays

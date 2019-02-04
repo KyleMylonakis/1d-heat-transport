@@ -37,6 +37,7 @@ int main()
 
     // Initialize the positions and velicities of the resolved system to zero
     std::cout << "Initializing positions and velocities of the resolved system" << std::endl;
+    /*
     for (int j = 0; j < n_particles; ++j)
     {
         positions[j] = 0;
@@ -48,7 +49,17 @@ int main()
     {
         int_velocities[j] = 0;
     }
-
+    */
+    
+    initialize_positions(positions, n_particles);
+    initialize_velocities(int_velocities, first_vel, last_vel, n_int_particles);
+    first_initial_pos = positions[0];
+    last_initial_pos = positions[n_particles -1];
+    compute_mean(positions, n_particles);
+    compute_variance(positions, n_particles);
+    compute_mean(int_velocities, n_int_particles);
+    compute_variance(int_velocities, n_int_particles);
+    //return 0;
     
     
     // Generate and save noise for testing purposes
@@ -641,7 +652,7 @@ int main()
         }
 
         RK3_system(positions,first_vel, last_vel, int_velocities, current_step, theta, left_noise_half_grid_all, right_noise_half_grid_all,
-                            trunc_theta_norm, shifted_theta, left_wghts_nds,  right_wghts_nds);
+                            trunc_theta_norm, shifted_theta, left_wghts_nds,  right_wghts_nds, first_initial_pos, last_initial_pos);
 
 
     }
@@ -728,7 +739,7 @@ int main()
             }
 
         RK3_system(positions,first_vel, last_vel, int_velocities, current_step, theta, left_noise_half_grid_all, right_noise_half_grid_all,
-                trunc_theta_norm, shifted_theta, left_wghts_nds, right_wghts_nds);
+                trunc_theta_norm, shifted_theta, left_wghts_nds, right_wghts_nds, first_initial_pos, last_initial_pos);
 
     }
 

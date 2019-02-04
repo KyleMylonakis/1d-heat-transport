@@ -311,7 +311,7 @@ double fpot(double x)
 
 void f_system(double *pos, double *first_vel, double *last_vel, double* int_velocities, 
     long long int current_step, double *theta, double left_noise, double right_noise, double theta_norm,
-    Weights_and_Nodes &left_wghts_nds, Weights_and_Nodes &right_wghts_nds)
+    Weights_and_Nodes &left_wghts_nds, Weights_and_Nodes &right_wghts_nds, double first_initial_pos, double last_initial_pos)
 {
 
     double* temp_pos = new double[n_particles];
@@ -328,13 +328,13 @@ void f_system(double *pos, double *first_vel, double *last_vel, double* int_velo
     temp_pos[n_particles - 1] = last_vel[current_step -1];
 
 
-    temp_first_vel = fpot(pos[1] - pos[0] + a0)  + ( (g_k_sqrd * left_noise) ) -g_k_sqrd*trap(first_vel,theta, current_step, theta_norm, left_wghts_nds);// + (g_k_sqrd*pos[0]*( (1/theta_norm) - 1) );
+    temp_first_vel = fpot(pos[1] - pos[0] + a0)  - g_k_sqrd * theta_f(g_dt * (current_step -1), left_wghts_nds)*first_initial_pos + ( (g_k_sqrd * left_noise) ) -g_k_sqrd*trap(first_vel,theta, current_step, theta_norm, left_wghts_nds);// + (g_k_sqrd*pos[0]*( (1/theta_norm) - 1) );
     for (int j = 1; j < n_int_particles+1; ++j)
     {
         temp_int_velocities[j-1] = fpot(pos[j+1] - pos[j] + a0) -fpot(pos[j] - pos[j -1] + a0);
     }
 
-    temp_last_vel = -fpot(pos[n_particles -1] - pos[n_particles -2] + a0)  + ( (g_k_sqrd * right_noise) ) -g_k_sqrd*trap(last_vel,theta, current_step, theta_norm, right_wghts_nds);// + (g_k_sqrd*pos[n_particles -1]*( (1/theta_norm) - 1));
+    temp_last_vel = -fpot(pos[n_particles -1] - pos[n_particles -2] + a0) - g_k_sqrd * theta_f(g_dt * (current_step -1), left_wghts_nds)*last_initial_pos + ( (g_k_sqrd * right_noise) ) -g_k_sqrd*trap(last_vel,theta, current_step, theta_norm, right_wghts_nds);// + (g_k_sqrd*pos[n_particles -1]*( (1/theta_norm) - 1));
 
     for (int j = 0; j < n_particles; ++j)
     {
@@ -409,7 +409,7 @@ double old_trap(double *vel, double *theta, long long int current_step, double t
 }
 
 
-
+/*
 
 void f_system_finer_grids(double *pos, double *first_vel, double *last_vel, double* int_velocities, long long int current_step, double *theta, double* left_noise, double* right_noise, double theta_norm, double alter_step_size)
 {
@@ -424,7 +424,7 @@ void f_system_finer_grids(double *pos, double *first_vel, double *last_vel, doub
     pos[0] = -first_vel[current_step-1];
     first_vel[current_step - 1] = temp_pos[0];
     */
-    
+    /*
     
     temp_pos[0] = first_vel[current_step-1];
     for (int j = 0; j < n_particles - 2; ++j)
@@ -459,14 +459,14 @@ void f_system_finer_grids(double *pos, double *first_vel, double *last_vel, doub
 
 }
 
-
+*/
 
 
 void f_system_xtra(double *pos, double *first_vel, double *last_vel, double* int_velocities, long long int current_step, 
                     double *theta, double left_noise, double right_noise, double theta_norm, double xtra_step_size, 
                     double *extern_temp_first_vel, double *extern_temp_last_vel,
                     double hold_first_vel, double hold_last_vel, double *shifted_theta,
-                    Weights_and_Nodes &left_wghts_nds, Weights_and_Nodes &right_wghts_nds)
+                    Weights_and_Nodes &left_wghts_nds, Weights_and_Nodes &right_wghts_nds, double first_initial_pos, double last_initial_pos)
 {
     double* temp_pos = new double[n_particles];
     double temp_first_vel {0};
@@ -486,7 +486,7 @@ void f_system_xtra(double *pos, double *first_vel, double *last_vel, double* int
     double hold_extern_temp_first_vel {extern_temp_first_vel[current_step - 1]};
     extern_temp_first_vel[current_step - 1] = hold_first_vel;
     get_interp_coef( extern_temp_first_vel, current_step, coeff);
-    temp_first_vel = fpot(pos[1] - pos[0] + a0)  + ( (g_k_sqrd * left_noise) ) -g_k_sqrd*trap_xtra(extern_temp_first_vel,theta, current_step, theta_norm, coeff, xtra_step_size, shifted_theta, left_wghts_nds) ;//+ (g_k_sqrd*pos[0]*( (1/theta_norm) - 1));
+    temp_first_vel = fpot(pos[1] - pos[0] + a0) - g_k_sqrd * theta_f(g_dt * (current_step -1 + xtra_step_size), left_wghts_nds)*first_initial_pos + ( (g_k_sqrd * left_noise) ) -g_k_sqrd*trap_xtra(extern_temp_first_vel,theta, current_step, theta_norm, coeff, xtra_step_size, shifted_theta, left_wghts_nds) ;//+ (g_k_sqrd*pos[0]*( (1/theta_norm) - 1));
     extern_temp_first_vel[current_step -1] = hold_extern_temp_first_vel;
     
     for (int j = 1; j < n_int_particles+1; ++j)
@@ -497,7 +497,7 @@ void f_system_xtra(double *pos, double *first_vel, double *last_vel, double* int
     double hold_extern_temp_last_vel {extern_temp_last_vel[current_step - 1]};
     extern_temp_last_vel[current_step - 1] = hold_last_vel;
     get_interp_coef( extern_temp_last_vel, current_step, coeff);
-    temp_last_vel = -fpot(pos[n_particles -1] - pos[n_particles -2] + a0) + ( (g_k_sqrd * right_noise)  ) - g_k_sqrd*trap_xtra(extern_temp_last_vel,theta, current_step, theta_norm, coeff, xtra_step_size, shifted_theta, right_wghts_nds) ;//+ (g_k_sqrd*pos[n_particles -1]*( (1/theta_norm) - 1));
+    temp_last_vel = -fpot(pos[n_particles -1] - pos[n_particles -2] + a0) - g_k_sqrd * theta_f(g_dt * (current_step -1 + xtra_step_size), left_wghts_nds)*last_initial_pos+ ( (g_k_sqrd * right_noise)  ) - g_k_sqrd*trap_xtra(extern_temp_last_vel,theta, current_step, theta_norm, coeff, xtra_step_size, shifted_theta, right_wghts_nds) ;//+ (g_k_sqrd*pos[n_particles -1]*( (1/theta_norm) - 1));
     extern_temp_last_vel[current_step - 1] = hold_extern_temp_last_vel;
 
 
@@ -525,7 +525,7 @@ void f_system_xtra(double *pos, double *first_vel, double *last_vel, double* int
 
 void RK3_system(double *pos, double *first_vel, double *last_vel, double* int_velocities, long long int current_step, 
     double *theta, double* left_noise, double* right_noise, double theta_norm, double *shifted_theta,
-    Weights_and_Nodes &left_wghts_nds, Weights_and_Nodes &right_wghts_nds)
+    Weights_and_Nodes &left_wghts_nds, Weights_and_Nodes &right_wghts_nds, double first_initial_pos, double last_initial_pos)
 {
     current_step +=1;
     
@@ -559,7 +559,7 @@ void RK3_system(double *pos, double *first_vel, double *last_vel, double* int_ve
     
 
     // This assumes the noise is already at the correct time step
-    f_system( pos, first_vel, last_vel, int_velocities, current_step, theta, left_noise[2*(current_step - 1)], right_noise[2*(current_step - 1)], theta_norm, left_wghts_nds, right_wghts_nds);
+    f_system( pos, first_vel, last_vel, int_velocities, current_step, theta, left_noise[2*(current_step - 1)], right_noise[2*(current_step - 1)], theta_norm, left_wghts_nds, right_wghts_nds, first_initial_pos, last_initial_pos);
     
     alpha_pos[0] = temp_pos[0] + 0.5 * g_dt * pos[0];
     for (int j = 1; j < n_particles -1; ++j)
@@ -587,7 +587,7 @@ void RK3_system(double *pos, double *first_vel, double *last_vel, double* int_ve
     // The half is for the added half step of the trapezoidal rule
     double xtra_step_size {0.5};
     f_system_xtra( alpha_pos, first_alpha_vel, last_alpha_vel, alpha_vel, current_step, theta, left_noise[2*(current_step - 1) + 1], right_noise[2*(current_step - 1) + 1], 
-                    theta_norm, xtra_step_size, first_vel, last_vel, hold_first_vel, hold_last_vel, shifted_theta, left_wghts_nds, right_wghts_nds);
+                    theta_norm, xtra_step_size, first_vel, last_vel, hold_first_vel, hold_last_vel, shifted_theta, left_wghts_nds, right_wghts_nds, first_initial_pos, last_initial_pos);
 
     current_time += 0.5 * g_dt;
 
@@ -611,7 +611,7 @@ void RK3_system(double *pos, double *first_vel, double *last_vel, double* int_ve
     
     xtra_step_size = 1.0;
 
-    f_system_xtra( beta_pos, first_beta_vel, last_beta_vel, beta_vel, current_step, theta, left_noise[2*(current_step)], right_noise[2*(current_step)], theta_norm, xtra_step_size, first_vel, last_vel, hold_first_vel, hold_last_vel, shifted_theta, left_wghts_nds, right_wghts_nds);
+    f_system_xtra( beta_pos, first_beta_vel, last_beta_vel, beta_vel, current_step, theta, left_noise[2*(current_step)], right_noise[2*(current_step)], theta_norm, xtra_step_size, first_vel, last_vel, hold_first_vel, hold_last_vel, shifted_theta, left_wghts_nds, right_wghts_nds, first_initial_pos, last_initial_pos);
 
 
     pos[0] = temp_pos[0] + g_dt * ( (1.0/6.0) * pos[0] + (2.0/3.0) * alpha_pos[0] + (1.0/6.0) * beta_pos[0] );
