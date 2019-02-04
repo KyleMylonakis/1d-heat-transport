@@ -77,6 +77,7 @@ int main()
 
     // Initialize the positions and velicities of the resolved system to zero
     std::cout << "Initializing positions and velocities of the resolved system" << std::endl;
+    
     for (int j = 0; j < n_particles; ++j)
     {
         positions[j] = 0;
@@ -88,6 +89,34 @@ int main()
     {
         int_velocities[j] = 0;
     }
+    
+
+    initialize_positions(positions, n_particles);
+    initialize_velocities(int_velocities, first_vel, last_vel, n_int_particles);
+    first_initial_pos = positions[0];
+    last_initial_pos = positions[n_particles -1];
+
+    /*
+    for (int jj = 0; jj < n_particles; ++jj)
+    {
+        std::cout << "Positions: " << positions[jj]  << std::endl;
+    }
+    std::cout << "First initial Pos " << first_initial_pos << std::endl;
+    std::cout << "Last Initial pos " << last_initial_pos << std::endl;
+    std::cout << "First Vel " << first_vel[0] << std::endl;
+    for (int jj = 0; jj < n_int_particles; ++jj)
+    {
+        std::cout << "Velocities " << int_velocities[jj] << std::endl;
+    }
+    std::cout << "Last Vel " << last_vel[0] << std::endl;
+    */
+    compute_mean(positions, n_particles);
+    compute_variance(positions, n_particles);
+    compute_mean(int_velocities, n_int_particles);
+    compute_variance(int_velocities, n_int_particles);
+    //return 0;
+
+
 
     // Initialize the time domain values for the beta, a_0(t) and b_0(t)
     std::cout << "Initializing bath auxillary functions" << std::endl;
@@ -480,7 +509,7 @@ int main()
     RK3_system_time_zero(positions,first_vel, last_vel, int_velocities, 0, theta, l_noise, r_noise,
                             trunc_theta_norm, a_0, b_0, a_bath, b_bath, l_bath_init_pos, 
                             l_bath_init_vel, r_bath_init_pos, r_bath_init_vel, shifted_theta,
-                            left_wghts_nds, right_wghts_nds);
+                            left_wghts_nds, right_wghts_nds, first_initial_pos, last_initial_pos);
 
     
     // Loop until equilibriation time
@@ -505,7 +534,7 @@ int main()
         RK3_system(positions,first_vel, last_vel, int_velocities, current_step, theta, l_noise, r_noise,
                             trunc_theta_norm, a_0, b_0, a_bath, b_bath, l_bath_init_pos, 
                             l_bath_init_vel, r_bath_init_pos, r_bath_init_vel, shifted_theta,
-                            left_wghts_nds, right_wghts_nds);
+                            left_wghts_nds, right_wghts_nds, first_initial_pos, last_initial_pos);
 
 
     }
@@ -594,7 +623,7 @@ int main()
         RK3_system(positions,first_vel, last_vel, int_velocities, current_step, theta, l_noise, r_noise,
                 trunc_theta_norm, a_0, b_0, a_bath, b_bath, l_bath_init_pos, 
                 l_bath_init_vel, r_bath_init_pos, r_bath_init_vel, shifted_theta,
-                left_wghts_nds, right_wghts_nds);
+                left_wghts_nds, right_wghts_nds, first_initial_pos, last_initial_pos);
 
     }
 

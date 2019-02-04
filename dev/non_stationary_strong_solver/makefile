@@ -1,4 +1,4 @@
-OBJS = functions.cpp dynamics.cpp Weights_and_Nodes.cpp
+OBJS = functions.cpp dynamics.cpp Weights_and_Nodes.cpp randomize_initial_data.cpp
 CC = g++
 CFLAGS = -Wall -std=gnu++17 -fopenmp -O3
 

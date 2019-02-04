@@ -13,7 +13,7 @@
 // Initialize the constants
 extern const double g_dt {0.001}; // Time step of the simulation
 const int dt_inv {static_cast<int>(1/g_dt)};      // Must be 1/dt as an int
-const int t_max {10};        // Final time of the simulation
+const int t_max {10000};        // Final time of the simulation
 extern const double g_k_sqrd {156*pow(2,-7.0/3.0) - 42*pow(2, -4.0/3.0) }; // Coming from the second derivative of the Lennard Jones 
 extern const double g_k {sqrt(g_k_sqrd)}; // Coming from the second derivative of the Lennard Jones 
 extern const double a0 {pow(2,1.0/6.0)}; // Equilibrium spacing
@@ -34,6 +34,11 @@ double trunc_beta_norm {0}; // The value of the integral of beta from 0 to dt*ma
 double trunc_theta_norm {0}; // The value of the integral of theta from 0 to dt*max_trap_steps
 int quarter_grid_steps {9};
 int half_grid_steps {quarter_grid_steps/2 + 1}; // This uses int division
+extern const double left_temp {0.02};
+extern const double right_temp {0.08};
+extern const double avg_init_temp {(left_temp + right_temp)/2.0};
+double first_initial_pos {0.0};
+double last_initial_pos {0.0};
 
 
 // Allocate the Arrays
