@@ -1,3 +1,12 @@
+/*
+    * The class defining the particle system
+    * This class is responsible for initializing
+    * the system, defining the potential, defining
+    * the interaction between particles, and how the system
+    * advances the dynamics
+*/
+
+
 #include <random>
 #include <iostream>
 #include <cstdlib>
@@ -8,7 +17,8 @@ Particle_system::Particle_system(int n_particles,
     double left_temp,
     double left_NH_coupling_const,
     double right_temp,
-    double right_NH_coupling_const) :
+    double right_NH_coupling_const,
+    std::string boundary_condition) :
     m_n_particles {n_particles},
     m_left_temp {left_temp},
     m_left_NH_coupling_const {left_NH_coupling_const},
@@ -68,6 +78,22 @@ Particle_system::Particle_system(int n_particles,
         m_k3_vel = new double[m_n_particles]();
         m_k3_pos = new double[m_n_particles]();
 
+        // Set internal_variables for the boundary condition
+        if (boundary_condition == "fixed")
+        {
+            m_boundary_condition = 1;
+        }
+        else if (boundary_condition == "free")
+        {
+            m_boundary_condition = 0;
+        }
+        else
+        {
+            std::cerr << "ERROR: Invalid choice of boundary condition. Exiting" << std::endl;
+            Particle_system::~Particle_system();
+            std::exit(1);
+        }
+        
     }
 
 Particle_system::~Particle_system()
@@ -134,7 +160,8 @@ void Particle_system::f()
 
     // Update the new values according to f
     // only temp variables should be on the RHS
-    m_velocities[0] = -Particle_system::F(m_temp_pos[1] - m_temp_pos[0] + m_a0)
+    m_velocities[0] = m_boundary_condition * Particle_system::F(m_temp_pos[0] + m_a0) 
+        - Particle_system::F(m_temp_pos[1] - m_temp_pos[0] + m_a0)
         - m_temp_left_NH_dynamical_var * m_temp_vel[0];
     m_positions[0] = m_temp_vel[0];
 
@@ -147,6 +174,7 @@ void Particle_system::f()
         }
 
     m_velocities[m_n_particles -1] = Particle_system::F(m_temp_pos[m_n_particles -1] - m_temp_pos[m_n_particles -2] + m_a0)
+        - m_boundary_condition * Particle_system::F( - m_temp_pos[m_n_particles - 1] + m_a0)
         - m_temp_right_NH_dynamical_var * m_temp_vel[m_n_particles -1] ;
     m_positions[m_n_particles -1] = m_temp_vel[m_n_particles -1];
 

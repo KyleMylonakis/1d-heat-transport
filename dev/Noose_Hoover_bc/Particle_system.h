@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <string>
 
 class Particle_system
 {
@@ -46,6 +47,9 @@ private:
     double m_k3_left_NH_dynamical_var;
     double m_k3_right_NH_dynamical_var;
 
+    // Integer representing the fixed or free boundary condition
+    int m_boundary_condition;
+
     // Interparticle Force: Comes from LJ potential with confinement
     // F = - grad(U)
     double F(double x) const;
@@ -79,7 +83,8 @@ public:
         double left_temp,
         double left_NH_coupling_const,
         double right_temp,
-        double right_NH_coupling_const);
+        double right_NH_coupling_const,
+        std::string boundary_condition);
 
     ~Particle_system();
 

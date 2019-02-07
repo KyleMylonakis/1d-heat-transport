@@ -14,9 +14,10 @@
     * 5) Temperature of right bath
     * 6) Noose Hoover Coupling constant for right bath
     * 7) The time step of the simulation
+    * 8) Fixed or free boundary condition
     * 
     * Outputs:
-    * None
+    * Integer representing the exit status of the system
     * 
     * File outputs:
     * Binary file containing the number of particles of the simulation and the number
@@ -31,6 +32,7 @@
 #include <limits>
 #include <chrono>
 #include <fstream>
+#include <string>
 
 // Custom Includes
 #include "parse_input.h"
@@ -45,7 +47,8 @@ int main(int argc, char* argv[])
     // Require the number of command line args to be exact
     int num_int_inputs {2};
     int num_double_inputs {5};
-    int num_required_inputs {num_int_inputs + num_double_inputs};
+    int num_string_inputs {1};
+    int num_required_inputs {num_int_inputs + num_double_inputs + num_string_inputs};
 
     if (num_required_inputs != argc -1 )
     {
@@ -61,6 +64,7 @@ int main(int argc, char* argv[])
     double right_temp {0.0};
     double right_NH_coupling_const {0.0};
     double dt {0.0};
+    std::string boundary_condition;
 
     parse_inputs(argv[1], t_final);
     parse_inputs(argv[2], n_particles);
@@ -69,13 +73,15 @@ int main(int argc, char* argv[])
     parse_inputs(argv[5], right_temp);
     parse_inputs(argv[6], right_NH_coupling_const);
     parse_inputs(argv[7], dt);
+    parse_inputs(argv[8], boundary_condition);
 
     // Initialize the Particle system
     Particle_system particles { n_particles, 
         left_temp, 
         left_NH_coupling_const, 
         right_temp, 
-        right_NH_coupling_const };
+        right_NH_coupling_const,
+        boundary_condition };
 
     // Initialize the variable controlling the length
     // of the simulation
