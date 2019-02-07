@@ -162,23 +162,30 @@ int main(int argc, char* argv[])
     std::ofstream sample_and_particle_size_buffer("sample_and_particle_size.bin", std::ios::out | std::ios::binary);
     std::ofstream sample_vel_file_buffer("sample_velocities.bin", std::ios::out | std::ios::binary );
     std::ofstream sample_pos_file_buffer("sample_positions.bin", std::ios::out | std::ios::binary );
+    std::ofstream temp_array_buffer("initial_bath_temps.bin", std::ios::out | std::ios::binary );
     
-    if(!sample_vel_file_buffer || !sample_pos_file_buffer || !sample_and_particle_size_buffer )
+    if(!sample_vel_file_buffer 
+        || !sample_pos_file_buffer 
+        || !sample_and_particle_size_buffer 
+        || !temp_array_buffer )
     {
-        std::cerr << "Error: Cannot create sample binary files" << std::endl;
+        std::cerr << "Error: Cannot create the binary files" << std::endl;
         return 1;
     }
 
     // Prepare array 
     int sample_and_particle_size_array[2] {n_particles, num_sample_times};
+    double temp_array[2] {left_temp, right_temp};
 
     sample_vel_file_buffer.write( reinterpret_cast<char *>(velocity_samples), sizeof(double) * num_sample_times * n_particles );
     sample_pos_file_buffer.write( reinterpret_cast<char *>(positions_samples), sizeof(double)* num_sample_times * n_particles );
     sample_and_particle_size_buffer.write( reinterpret_cast<char *>(sample_and_particle_size_array), sizeof(int)*2);
+    temp_array_buffer.write( reinterpret_cast<char *>(temp_array), sizeof(double)*2 );
 
     sample_vel_file_buffer.close();
     sample_pos_file_buffer.close();
     sample_and_particle_size_buffer.close();
+    temp_array_buffer.close();
 
     delete[] positions_samples;
     delete[] velocity_samples;
