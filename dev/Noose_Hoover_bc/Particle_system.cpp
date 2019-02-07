@@ -123,11 +123,12 @@ void Particle_system::f()
 {
     // Store current positions, vels, and NH dynamical variables
     // in temporary arrays
-    for (int ii = 0; ii < m_n_particles; ++ii)
-    {
-        m_temp_pos[ii] = m_positions[ii];
-        m_temp_vel[ii] = m_velocities[ii];
-    }
+    #pragma omp parallel for
+        for (int ii = 0; ii < m_n_particles; ++ii)
+        {
+            m_temp_pos[ii] = m_positions[ii];
+            m_temp_vel[ii] = m_velocities[ii];
+        }
     m_temp_left_NH_dynamical_var = m_left_NH_dynamical_var;
     m_temp_right_NH_dynamical_var = m_right_NH_dynamical_var;
 
@@ -136,12 +137,15 @@ void Particle_system::f()
     m_velocities[0] = -Particle_system::F(m_temp_pos[1] - m_temp_pos[0] + m_a0)
         - m_temp_left_NH_dynamical_var * m_temp_vel[0];
     m_positions[0] = m_temp_vel[0];
-    for (int ii = 1; ii < m_n_particles -1; ++ii)
-    {
-        m_velocities[ii] = Particle_system::F(m_temp_pos[ii] - m_temp_pos[ii -1] + m_a0)
-            - Particle_system::F(m_temp_pos[ii + 1] - m_temp_pos[ii] + m_a0);
-        m_positions[ii] = m_temp_vel[ii];
-    }
+
+    #pragma omp parallel for
+        for (int ii = 1; ii < m_n_particles -1; ++ii)
+        {
+            m_velocities[ii] = Particle_system::F(m_temp_pos[ii] - m_temp_pos[ii -1] + m_a0)
+                - Particle_system::F(m_temp_pos[ii + 1] - m_temp_pos[ii] + m_a0);
+            m_positions[ii] = m_temp_vel[ii];
+        }
+
     m_velocities[m_n_particles -1] = Particle_system::F(m_temp_pos[m_n_particles -1] - m_temp_pos[m_n_particles -2] + m_a0)
         - m_temp_right_NH_dynamical_var * m_temp_vel[m_n_particles -1] ;
     m_positions[m_n_particles -1] = m_temp_vel[m_n_particles -1];
@@ -163,11 +167,12 @@ void Particle_system::store_pos_vel_dyn_vars(
         double* target_right_dyn_var
     )
     {
-        for (int ii = 0; ii < m_n_particles; ++ii)
-        {
-            target_vel[ii] = source_vel[ii];
-            target_pos[ii] = source_pos[ii];
-        }
+        #pragma omp parallel for
+            for (int ii = 0; ii < m_n_particles; ++ii)
+            {
+                target_vel[ii] = source_vel[ii];
+                target_pos[ii] = source_pos[ii];
+            }
         *target_left_dyn_var = source_left_dyn_var;
         *target_right_dyn_var = source_right_dyn_var;
     }
@@ -185,11 +190,12 @@ void Particle_system::RK3(double h)
         m_k1_vel, m_k1_pos, &m_k1_left_NH_dynamical_var, &m_k1_right_NH_dynamical_var);
 
     // update current state to y + h/2 * k1
-    for (int ii = 0; ii < m_n_particles; ++ii)
-    {
-        m_velocities[ii] = m_rk_temp_vel[ii] + (h/2.0) * m_k1_vel[ii];
-        m_positions[ii] = m_rk_temp_pos[ii] + (h/2.0) * m_k1_pos[ii];
-    }
+    #pragma omp parallel for
+        for (int ii = 0; ii < m_n_particles; ++ii)
+        {
+            m_velocities[ii] = m_rk_temp_vel[ii] + (h/2.0) * m_k1_vel[ii];
+            m_positions[ii] = m_rk_temp_pos[ii] + (h/2.0) * m_k1_pos[ii];
+        }
     m_left_NH_dynamical_var = m_rk_temp_left_NH_dynamical_var + (h/2.0) * m_k1_left_NH_dynamical_var;
     m_right_NH_dynamical_var = m_rk_temp_right_NH_dynamical_var + (h/2.0) * m_k1_right_NH_dynamical_var;
 
@@ -199,11 +205,12 @@ void Particle_system::RK3(double h)
         m_k2_vel, m_k2_pos, &m_k2_left_NH_dynamical_var, &m_k2_right_NH_dynamical_var);
 
     // Update current state to y + h(-k1 + 2k2)
-    for (int ii = 0; ii < m_n_particles; ++ii)
-    {
-        m_velocities[ii] = m_rk_temp_vel[ii] + h * (- m_k1_vel[ii] + 2 * m_k2_vel[ii]);
-        m_positions[ii] = m_rk_temp_pos[ii] + h * (- m_k1_pos[ii] + 2 * m_k2_pos[ii]);
-    }
+    #pragma omp parallel for
+        for (int ii = 0; ii < m_n_particles; ++ii)
+        {
+            m_velocities[ii] = m_rk_temp_vel[ii] + h * (- m_k1_vel[ii] + 2 * m_k2_vel[ii]);
+            m_positions[ii] = m_rk_temp_pos[ii] + h * (- m_k1_pos[ii] + 2 * m_k2_pos[ii]);
+        }
     m_left_NH_dynamical_var = m_rk_temp_left_NH_dynamical_var + h * (-m_k1_left_NH_dynamical_var + 2 * m_k2_left_NH_dynamical_var);
     m_right_NH_dynamical_var = m_rk_temp_right_NH_dynamical_var + h * (-m_k1_right_NH_dynamical_var + 2 * m_k2_right_NH_dynamical_var);
 
@@ -213,13 +220,14 @@ void Particle_system::RK3(double h)
         m_k3_vel, m_k3_pos, &m_k3_left_NH_dynamical_var, &m_k3_right_NH_dynamical_var);
     
     // Compute the final update at the next time step
-    for (int ii = 0; ii < m_n_particles; ++ii)
-    {
-        m_velocities[ii] = m_rk_temp_vel[ii]
-            + h * ( (1.0/6.0)*m_k1_vel[ii] + (2.0/3.0)*m_k2_vel[ii] + (1.0/6.0)*m_k3_vel[ii] );
-        m_positions[ii] = m_rk_temp_pos[ii]
-            + h * ( (1.0/6.0)*m_k1_pos[ii] + (2.0/3.0)*m_k2_pos[ii] + (1.0/6.0)*m_k3_pos[ii] );
-    }
+    #pragma omp parallel for
+        for (int ii = 0; ii < m_n_particles; ++ii)
+        {
+            m_velocities[ii] = m_rk_temp_vel[ii]
+                + h * ( (1.0/6.0)*m_k1_vel[ii] + (2.0/3.0)*m_k2_vel[ii] + (1.0/6.0)*m_k3_vel[ii] );
+            m_positions[ii] = m_rk_temp_pos[ii]
+                + h * ( (1.0/6.0)*m_k1_pos[ii] + (2.0/3.0)*m_k2_pos[ii] + (1.0/6.0)*m_k3_pos[ii] );
+        }
     m_left_NH_dynamical_var = m_rk_temp_left_NH_dynamical_var
         + h * ( (1.0/6.0)*m_k1_left_NH_dynamical_var + (2.0/3.0)*m_k2_left_NH_dynamical_var + (1.0/6.0)*m_k3_left_NH_dynamical_var );
     m_right_NH_dynamical_var = m_rk_temp_right_NH_dynamical_var
