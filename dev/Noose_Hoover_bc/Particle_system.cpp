@@ -44,9 +44,9 @@ Particle_system::Particle_system(int n_particles,
         m_velocities = new double[m_n_particles];
         
         // Randomize the initial positions and velocities
-        //std::random_device rd;
-        //std::mt19937 generator(rd());
-        std::mt19937 generator(10); // Fixed seed for debugging
+        std::random_device rd;
+        std::mt19937 generator(rd());
+        //std::mt19937 generator(10); // Fixed seed for debugging
 
         const double initial_avg_temp {(m_left_temp + m_right_temp)/2.0};
         const double mean {0.0};
