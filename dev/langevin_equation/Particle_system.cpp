@@ -47,7 +47,7 @@ Particle_system::Particle_system(int n_particles,
         std::cout << "Randomizing initial displacements and velocities" << std::endl;
         for (int ii = 0; ii < m_n_particles; ++ii)
         {
-            m_positions[ii] = unif_dist(generator);
+            //m_positions[ii] = unif_dist(generator);
             m_velocities[ii] = norm_dist(generator);
         }
 
@@ -128,14 +128,15 @@ Particle_system::~Particle_system()
 // F = - grad(U)
 double Particle_system::F(double x) const
 {
-    /*
+    
     if (!std::isfinite(12*pow(x,-13) - 6*pow(x,-7) - 4*pow(x - m_a0,3) ))
     {
         std::cerr << "DIVIDING BY ZERO " << std::endl;
         std::exit(1);
     }
     return 12*pow(x,-13) - 6*pow(x,-7) - 4*pow(x - m_a0,3);
-    */
+    
+   /*
     double out;
     out = 6*std::pow(x,-7);
     out *= (2*std::pow(x,-6) - 1 );
@@ -145,7 +146,9 @@ double Particle_system::F(double x) const
         std::cerr << "DIVIDING BY ZERO " << std::endl;
         std::exit(1);
     }
-    return -x + m_a0;
+    return out;
+    */
+    //return -x + m_a0;
 }
 
 void Particle_system::f(double h)
@@ -201,6 +204,8 @@ void Particle_system::store_pos_vel_dyn_vars(
 
 void Particle_system::RK3(double h)
 {
+    std::cerr << "DO NOT USE WITHOUT FIXING f() " << std::endl;
+    exit(1);
     // Store original system state
     Particle_system::store_pos_vel_dyn_vars(m_velocities, m_positions,
         m_rk_temp_vel, m_rk_temp_pos);
@@ -261,6 +266,7 @@ void Particle_system::milstein(double h)
     // Computes the update based on the Milstein scheme.
     // First and last velocities are using IMEX scheme
     m_velocities[0] = (m_rk_temp_vel[0] + h * m_velocities[0])/(1.0 + m_langevin_coupling_const*h);
+    m_positions[0] = m_rk_temp_pos[0] + h * m_positions[0];
     #pragma omp parallel for
         for (int ii = 1; ii < m_n_particles - 1; ++ii)
         {
@@ -268,6 +274,7 @@ void Particle_system::milstein(double h)
             m_positions[ii] = m_rk_temp_pos[ii] + h * m_positions[ii];
         }
     m_velocities[m_n_particles - 1] = (m_rk_temp_vel[m_n_particles - 1] + h * m_velocities[m_n_particles - 1])/(1.0 + m_langevin_coupling_const*h);
+    m_positions[m_n_particles -1] = m_rk_temp_pos[m_n_particles -1] + h * m_positions[m_n_particles -1];
 }
 
 double Particle_system::get_position(int index) const
