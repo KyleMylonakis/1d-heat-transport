@@ -23,9 +23,12 @@ Particle_system::Particle_system(int n_particles,
     m_left_temp {left_temp},
     m_right_temp {right_temp},
     m_langevin_coupling_const { langevin_coupling_const },
-    m_left_langevin_variance { 2 * m_langevin_coupling_const * m_left_temp },
-    m_right_langevin_variance  {2 * m_langevin_coupling_const * m_right_temp },
-    m_time_step {time_step}
+    m_time_step {time_step},
+    m_c0 {std::exp(-m_nu*m_time_step/2.0)},
+    m_c1 {(1 - m_c0)/m_nu},
+    m_c2 {1-m_c0*m_c0},
+    m_left_langevin_variance { m_c2 * m_c2 * m_left_temp },
+    m_right_langevin_variance  {m_c2 * m_c2 * m_right_temp }
     {
         // Allocate the positions and velocities
 
@@ -87,6 +90,8 @@ Particle_system::Particle_system(int n_particles,
 
         if (damping == "damping")
         {
+            std::cerr << "ERROR: Damping not allowed at this time" << std::endl;
+            exit(1);
             m_damping = 1;
         }
         else if (damping == "no_damping")
@@ -111,11 +116,13 @@ Particle_system::Particle_system(int n_particles,
 
         // Initialize the system with one step of RK3 before doing the 
         // multistep scheme for the forces
+        /*
         Particle_system::compute_forces(m_time_step);
         Particle_system::deep_copy(m_forces, m_forces_prev_step, m_n_particles);
         Particle_system::RK3(m_time_step);
         Particle_system::compute_accel(m_time_step);
         Particle_system::compute_forces(m_time_step);
+        */
 
     }
 
@@ -384,9 +391,9 @@ void Particle_system::compute_accel(double h)
 void Particle_system::compute_forces(double h)
 {
     // Compute and store the forces not including the damping
-    m_forces[0] = m_boundary_condition * Particle_system::F(m_positions[0] + m_a0) 
-        - Particle_system::F(m_positions[1] - m_positions[0] + m_a0)
-        + m_left_stochastic_bath(m_generator)/sqrt(h);
+    m_forces[0] = m_c1 * (m_boundary_condition * Particle_system::F(m_positions[0] + m_a0) 
+        - Particle_system::F(m_positions[1] - m_positions[0] + m_a0) )
+        + m_left_stochastic_bath(m_generator);
 
     #pragma omp parallel for
         for (int ii = 1; ii < m_n_particles -1; ++ii)
@@ -395,9 +402,9 @@ void Particle_system::compute_forces(double h)
                 - Particle_system::F(m_positions[ii + 1] - m_positions[ii] + m_a0);
         }
 
-    m_forces[m_n_particles -1] = Particle_system::F(m_positions[m_n_particles -1] - m_positions[m_n_particles -2] + m_a0)
-        - m_boundary_condition * Particle_system::F( - m_positions[m_n_particles - 1] + m_a0)
-        + m_right_stochastic_bath(m_generator)/sqrt(h);
+    m_forces[m_n_particles -1] = m_c1 * ( Particle_system::F(m_positions[m_n_particles -1] - m_positions[m_n_particles -2] + m_a0)
+        - m_boundary_condition * Particle_system::F( - m_positions[m_n_particles - 1] + m_a0) )
+        + m_right_stochastic_bath(m_generator);
  
 }
 
@@ -434,4 +441,30 @@ void Particle_system::velocity_verlet_with_damping()
     deep_copy(m_forces, m_forces_prev_step, m_n_particles);
     compute_accel(m_time_step);
     compute_forces(m_time_step);
+}
+
+void Particle_system::velocity_verlet_integrating_factor()
+{
+    compute_forces(m_time_step);
+    for (int ii = 1; ii < m_n_particles - 1; ++ii)
+    {
+        m_velocities[ii] = m_velocities[ii] + m_forces[ii]*m_time_step/2.0;
+    }
+    m_velocities[0] = m_velocities[0]*m_c0 + m_forces[0];
+    m_velocities[m_n_particles -1] = m_velocities[m_n_particles -1]*m_c0 + m_forces[m_n_particles -1];
+    for (int ii = 0; ii < m_n_particles; ++ii)
+    {
+        m_positions[ii] = m_positions[ii] + m_velocities[ii]*m_time_step;
+    }
+    compute_forces(m_time_step);
+    for (int ii = 1; ii < m_n_particles - 1; ++ii)
+    {
+        m_velocities[ii] = m_velocities[ii] + m_forces[ii]*m_time_step/2.0;
+    }
+    m_velocities[0] = m_velocities[0]*m_c0 + m_forces[0];
+    m_velocities[m_n_particles -1] = m_velocities[m_n_particles -1]*m_c0 + m_forces[m_n_particles -1];
+    for (int ii = 0; ii < m_n_particles; ++ii)
+    {
+        m_positions[ii] = m_positions[ii] + m_velocities[ii]*m_time_step;
+    }
 }
