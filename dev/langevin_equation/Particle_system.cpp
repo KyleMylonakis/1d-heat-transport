@@ -23,13 +23,16 @@ Particle_system::Particle_system(int n_particles,
     m_left_temp {left_temp},
     m_right_temp {right_temp},
     m_langevin_coupling_const { langevin_coupling_const },
-    m_time_step {time_step},
-    m_c0 {std::exp(-m_nu*m_time_step/2.0)},
-    m_c1 {(1 - m_c0)/m_nu},
-    m_c2 {1-m_c0*m_c0},
-    m_left_langevin_variance { m_c2 * m_c2 * m_left_temp },
-    m_right_langevin_variance  {m_c2 * m_c2 * m_right_temp }
+    m_time_step {time_step}
     {
+
+        m_nu = 10.0;
+        m_c0 = exp(-m_nu*m_time_step/2.0);
+        m_c1 = (1 - m_c0)/m_nu;
+        m_c2 = std::sqrt(1-m_c0*m_c0);
+        m_left_langevin_variance = m_c2 * m_c2 * m_left_temp ;
+        m_right_langevin_variance =  m_c2 * m_c2 * m_right_temp ;
+
         // Allocate the positions and velocities
 
         std::cout << "Allocating memory for displacements and velocities" << std::endl;
@@ -53,7 +56,7 @@ Particle_system::Particle_system(int n_particles,
         std::cout << "Randomizing initial displacements and velocities" << std::endl;
         for (int ii = 0; ii < m_n_particles; ++ii)
         {
-            //m_positions[ii] = unif_dist(generator);
+            m_positions[ii] = unif_dist(generator);
             m_velocities[ii] = norm_dist(generator);
         }
 
@@ -90,8 +93,6 @@ Particle_system::Particle_system(int n_particles,
 
         if (damping == "damping")
         {
-            std::cerr << "ERROR: Damping not allowed at this time" << std::endl;
-            exit(1);
             m_damping = 1;
         }
         else if (damping == "no_damping")
@@ -108,6 +109,8 @@ Particle_system::Particle_system(int n_particles,
         m_left_stochastic_bath = std::normal_distribution<double>(mean, sqrt(m_left_langevin_variance));
         m_right_stochastic_bath = std::normal_distribution<double>(mean, sqrt(m_right_langevin_variance));
         m_generator = std::mt19937(m_rd());
+        m_left_stochastic_bath(m_generator);
+        m_right_stochastic_bath(m_generator);
         //m_generator = std::mt19937(10);
 
         m_accel = new double[m_n_particles]();
@@ -392,7 +395,8 @@ void Particle_system::compute_forces(double h)
 {
     // Compute and store the forces not including the damping
     m_forces[0] = m_c1 * (m_boundary_condition * Particle_system::F(m_positions[0] + m_a0) 
-        - Particle_system::F(m_positions[1] - m_positions[0] + m_a0) )
+        - Particle_system::F(m_positions[1] - m_positions[0] + m_a0) 
+        - m_langevin_coupling_const * m_velocities[0] * m_damping )
         + m_left_stochastic_bath(m_generator);
 
     #pragma omp parallel for
@@ -403,7 +407,8 @@ void Particle_system::compute_forces(double h)
         }
 
     m_forces[m_n_particles -1] = m_c1 * ( Particle_system::F(m_positions[m_n_particles -1] - m_positions[m_n_particles -2] + m_a0)
-        - m_boundary_condition * Particle_system::F( - m_positions[m_n_particles - 1] + m_a0) )
+        - m_boundary_condition * Particle_system::F( - m_positions[m_n_particles - 1] + m_a0) 
+        - m_langevin_coupling_const * m_velocities[m_n_particles -1] * m_damping )
         + m_right_stochastic_bath(m_generator);
  
 }

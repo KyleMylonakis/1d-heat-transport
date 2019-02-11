@@ -16,14 +16,14 @@ private:
     const double m_langevin_coupling_const;
 
     const double m_a0 {pow(2,1.0/6.0)};
-    const double m_nu {10.0};
-    const double m_c0;
-    const double m_c1;
-    const double m_c2;
+    double m_nu;
+    double m_c0;
+    double m_c1;
+    double m_c2;
     
     // Langevin parameters and noise
-    const double m_left_langevin_variance ;
-    const double m_right_langevin_variance;
+    double m_left_langevin_variance ;
+    double m_right_langevin_variance;
     std::normal_distribution<double> m_left_stochastic_bath;
     std::normal_distribution<double> m_right_stochastic_bath;
     std::random_device m_rd;
