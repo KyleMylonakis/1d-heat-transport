@@ -61,11 +61,14 @@ Particle_system::Particle_system(int n_particles,
         }
 
         // Allocate memory and initialize vars for f() method
+        /*
         std::cout << "Allocating memory for f() method" << std::endl;
         m_temp_vel = new double[m_n_particles]();
         m_temp_pos = new double[m_n_particles]();
+        */
 
         // Allocate memory and initialize vars for RK3 method
+        /*
         m_rk_temp_vel = new double[m_n_particles]();
         m_rk_temp_pos = new double[m_n_particles]();
         m_k1_vel = new double[m_n_particles]();
@@ -74,6 +77,7 @@ Particle_system::Particle_system(int n_particles,
         m_k2_pos = new double[m_n_particles]();
         m_k3_vel = new double[m_n_particles]();
         m_k3_pos = new double[m_n_particles]();
+        */
 
         // Set internal_variables for the boundary condition
         if (boundary_condition == "fixed")
@@ -113,9 +117,9 @@ Particle_system::Particle_system(int n_particles,
         m_right_stochastic_bath(m_generator);
         //m_generator = std::mt19937(10);
 
-        m_accel = new double[m_n_particles]();
+        //m_accel = new double[m_n_particles]();
         m_forces = new double[m_n_particles]();
-        m_forces_prev_step = new double[m_n_particles]();
+        //m_forces_prev_step = new double[m_n_particles]();
 
         // Initialize the system with one step of RK3 before doing the 
         // multistep scheme for the forces
@@ -140,12 +144,14 @@ Particle_system::~Particle_system()
 
     // Deallocate the temporary variables for the f() method
     std::cout << "Deallocate the temporary variables for the f() method" << std::endl;
+    /*
     delete[] m_temp_pos;
     m_temp_pos = nullptr;
     delete[] m_temp_vel;
     m_temp_vel = nullptr;
-
+    */
     // Deallocate the temporary variable for the RK3 method
+    /*
     delete[] m_rk_temp_vel;
     delete[] m_rk_temp_pos;
     delete[] m_k1_vel;
@@ -154,7 +160,7 @@ Particle_system::~Particle_system()
     delete[] m_k2_pos;
     delete[] m_k3_vel;
     delete[] m_k3_pos;
-
+    *
     m_rk_temp_vel = nullptr;
     m_rk_temp_pos = nullptr;
     m_k1_vel = nullptr;
@@ -163,13 +169,18 @@ Particle_system::~Particle_system()
     m_k2_pos = nullptr;
     m_k3_vel = nullptr;
     m_k3_pos = nullptr;
-
+    
     delete[] m_accel;
     delete[] m_forces;
     delete[] m_forces_prev_step;
     m_accel = nullptr;
     m_forces = nullptr;
     m_forces_prev_step = nullptr;
+    */
+       
+    delete[] m_forces;
+    m_forces = nullptr;
+
 }
 
 // Interparticle Force: Comes from LJ potential with confinement

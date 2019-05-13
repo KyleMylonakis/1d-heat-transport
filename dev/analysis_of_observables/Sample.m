@@ -7,6 +7,8 @@ classdef Sample
        m_disp
        m_vel
        m_pos
+       m_num_samples
+       m_inv_trunc_param
    end
    
    % Calculated Observables
@@ -17,35 +19,63 @@ classdef Sample
        m_loc_energy
        m_loc_heat
        m_loc_heat_neglect_fluct
+       m_tot_heat
+       m_tot_heat_neglect_fluct
+       m_conductivity
+       m_conductivity_neglect_fluct
    end
    
    methods
        % Constructor
-       function obj = Sample(n_particles, disp, vel) 
+       function obj = Sample(disp, vel) 
            if nargin == 0
                fprintf('Using default constructor \n');
            else
-               obj.m_n_particles = n_particles;
+               csv_size = size(vel);
+               obj.m_n_particles = csv_size(2) - 1;
+               obj.m_num_samples = csv_size(1);
+               
                fprintf('Loading %i particle dispitions \n', obj.m_n_particles);
                obj.m_disp = disp(:,1:(end - 1));
+               
                fprintf('Loading %i particle velocities \n', obj.m_n_particles);
                obj.m_vel = vel(:,1:(end - 1));
+               
                fprintf('Constructing Positions from Displacements\n');
-               for j = 1:n_particles
-                   obj.m_pos(:,j) = obj.m_disp(:,j) + obj.a0.*(j-1).*ones(500000,1);
+               for j = 1:obj.m_n_particles
+                   obj.m_pos(:,j) = obj.m_disp(:,j) + obj.a0.*(j-1).*ones(obj.m_num_samples,1);
                end
+               
                fprintf('Constructung local temp\n');
                obj.m_loc_temp = init_m_loc_temp(obj);
+               
                fprintf('Constructung local temp with no local drift\n');
                obj.m_loc_temp_no_loc_drift = init_m_loc_temp_no_loc_drift(obj);
+               
                fprintf('Constructing local temp with no total drift\n');
                obj.m_loc_temp_no_tot_drift = init_m_loc_temp_no_tot_drift(obj);
+               
                fprintf('Constructing local energy\n');
                obj.m_loc_energy = init_m_loc_energy(obj);
+               
                fprintf('Constructing local heat\n');
                obj.m_loc_heat = init_m_loc_heat(obj);
+               
                fprintf('Constructing local heat ignoring local fluctuations\n');
                obj.m_loc_heat_neglect_fluct = init_m_loc_heat_neglect_fluct(obj);
+               
+               fprintf('Calculating total heat flux\n');
+               obj.m_tot_heat = get_tot_heat(obj);
+               
+               fprintf('Calculating total heat flux ingnoring local fluctuations\n');
+               obj.m_tot_heat_neglect_fluct = get_tot_heat_neglect_fluct(obj);
+               
+               fprintf('Calculating conductivity\n');
+               obj.m_conductivity = get_conductivity(obj);
+               
+               fprintf('Calculating conductivity ignoring local fluctuations\n');
+               obj.m_conductivity_neglect_fluct = get_conductivity_neglect_fluct(obj);
+               
            end
        end
 
@@ -61,7 +91,7 @@ classdef Sample
        
        function out = init_m_loc_temp_no_loc_drift(obj)
            loc_drift = mean(obj.m_vel);
-           out = mean( (obj.m_vel - repmat(loc_drift,500000,1)).*(obj.m_vel - repmat(loc_drift,500000,1) ) );
+           out = mean( (obj.m_vel - repmat(loc_drift,obj.m_num_samples,1)).*(obj.m_vel - repmat(loc_drift,obj.m_num_samples,1) ) );
        end
        
        function out = get.m_loc_temp_no_loc_drift(obj)
@@ -70,7 +100,7 @@ classdef Sample
        
        function out = init_m_loc_temp_no_tot_drift(obj)
            tot_drift = mean(mean(obj.m_vel));
-           out = mean( (obj.m_vel - tot_drift.*ones(500000,obj.m_n_particles)).*(obj.m_vel - tot_drift.*ones(500000,obj.m_n_particles)));
+           out = mean( (obj.m_vel - tot_drift.*ones(obj.m_num_samples,obj.m_n_particles)).*(obj.m_vel - tot_drift.*ones(obj.m_num_samples,obj.m_n_particles)));
        end
        
        function out = get.m_loc_temp_no_tot_drift(obj)
@@ -106,7 +136,7 @@ classdef Sample
        end
        
        function out = init_m_loc_heat(obj)
-           out = zeros(500000,obj.m_n_particles-1);
+           out = zeros(obj.m_num_samples,obj.m_n_particles-1);
            for j = 1:(obj.m_n_particles -1)
                out(:,j) = (0.5.*(obj.m_pos(:,j+1) - obj.m_pos(:,j)) ...
                    .*(obj.m_vel(:,j+1) + obj.m_vel(:,j)) ...
@@ -121,7 +151,7 @@ classdef Sample
        end
        
        function out = init_m_loc_heat_neglect_fluct(obj)
-           out = zeros(500000,obj.m_n_particles-1);
+           out = zeros(obj.m_num_samples,obj.m_n_particles-1);
            for j = 1:(obj.m_n_particles -1)
                out(:,j) = (0.5.*(obj.a0) ...
                    .*(obj.m_vel(:,j+1) + obj.m_vel(:,j)) ...
@@ -138,7 +168,21 @@ classdef Sample
            obj.m_loc_energy = NaN;
        end
        
+       function out = get_tot_heat(obj)
+          out =  sum(obj.m_loc_heat);
+       end
        
+       function out = get_tot_heat_neglect_fluct(obj)
+           out = sum(obj.m_loc_heat_neglect_fluct);
+       end
+       
+       function out = get_conductivity(obj)
+           out = -obj.m_tot_heat .* obj.m_n_particles ./ (obj.m_loc_temp(end) - obj.m_loc_temp(1));
+       end
+       
+       function out = get_conductivity_neglect_fluct(obj)
+           out = -obj.m_tot_heat_neglect_fluct .* obj.m_n_particles ./ (obj.m_loc_temp(end) - obj.m_loc_temp(1));
+       end
    
        
    end

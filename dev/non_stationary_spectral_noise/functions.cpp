@@ -315,13 +315,13 @@ void f_system(double *pos, double *first_vel, double *last_vel, double* int_velo
     temp_pos[n_particles - 1] = last_vel[current_step -1];
 
 
-    temp_first_vel = fpot(pos[1] - pos[0] + a0) - g_k_sqrd * ( first_initial_pos * theta_f(g_dt * (current_step - 1), left_wghts_nds ) ) + ( (g_k_sqrd * left_noise) / sqrt(theta_norm) ) -g_k_sqrd*trap(first_vel,theta, current_step, theta_norm, left_wghts_nds) ;
+    temp_first_vel = fpot(pos[1] - pos[0] + a0) - g_k_sqrd * ( first_initial_pos * theta_f(g_dt * (current_step - 1), left_wghts_nds ) ) + ( (left_noise/g_k) / sqrt(theta_norm) ) -g_k_sqrd*trap(first_vel,theta, current_step, theta_norm, left_wghts_nds) ;
     for (int j = 1; j < n_int_particles+1; ++j)
     {
         temp_int_velocities[j-1] = fpot(pos[j+1] - pos[j] + a0) -fpot(pos[j] - pos[j -1] + a0);
     }
 
-    temp_last_vel = -fpot(pos[n_particles -1] - pos[n_particles -2] + a0) - g_k_sqrd * ( last_initial_pos * theta_f(g_dt * (current_step - 1), left_wghts_nds ) ) + ( (g_k_sqrd * right_noise) / sqrt(theta_norm) ) -g_k_sqrd*trap(last_vel,theta, current_step, theta_norm, right_wghts_nds) ;
+    temp_last_vel = -fpot(pos[n_particles -1] - pos[n_particles -2] + a0) - g_k_sqrd * ( last_initial_pos * theta_f(g_dt * (current_step - 1), left_wghts_nds ) ) + ( (right_noise/g_k) / sqrt(theta_norm) ) -g_k_sqrd*trap(last_vel,theta, current_step, theta_norm, right_wghts_nds) ;
 
     for (int j = 0; j < n_particles; ++j)
     {
@@ -466,7 +466,7 @@ void f_system_xtra(double *pos, double *first_vel, double *last_vel, double* int
     double hold_extern_temp_first_vel {extern_temp_first_vel[current_step - 1]};
     extern_temp_first_vel[current_step - 1] = hold_first_vel;
     get_interp_coef( extern_temp_first_vel, current_step, coeff);
-    temp_first_vel = fpot(pos[1] - pos[0] + a0) - g_k_sqrd * ( first_initial_pos * theta_f(g_dt * (current_step - 1 + xtra_step_size), left_wghts_nds ) ) + ( (g_k_sqrd * left_noise) / sqrt(theta_norm) ) -g_k_sqrd*trap_xtra(extern_temp_first_vel,theta, current_step, theta_norm, coeff, xtra_step_size, shifted_theta, left_wghts_nds) ;
+    temp_first_vel = fpot(pos[1] - pos[0] + a0) - g_k_sqrd * ( first_initial_pos * theta_f(g_dt * (current_step - 1 + xtra_step_size), left_wghts_nds ) ) + ( left_noise / ( g_k * sqrt(theta_norm) ) ) -g_k_sqrd*trap_xtra(extern_temp_first_vel,theta, current_step, theta_norm, coeff, xtra_step_size, shifted_theta, left_wghts_nds) ;
     extern_temp_first_vel[current_step -1] = hold_extern_temp_first_vel;
     
     for (int j = 1; j < n_int_particles+1; ++j)
@@ -477,7 +477,7 @@ void f_system_xtra(double *pos, double *first_vel, double *last_vel, double* int
     double hold_extern_temp_last_vel {extern_temp_last_vel[current_step - 1]};
     extern_temp_last_vel[current_step - 1] = hold_last_vel;
     get_interp_coef( extern_temp_last_vel, current_step, coeff);
-    temp_last_vel = -fpot(pos[n_particles -1] - pos[n_particles -2] + a0) - g_k_sqrd * ( last_initial_pos * theta_f(g_dt * (current_step - 1 + xtra_step_size), left_wghts_nds ) ) + ( (g_k_sqrd * right_noise) / sqrt(theta_norm) ) - g_k_sqrd*trap_xtra(extern_temp_last_vel,theta, current_step, theta_norm, coeff, xtra_step_size, shifted_theta, right_wghts_nds) ;
+    temp_last_vel = -fpot(pos[n_particles -1] - pos[n_particles -2] + a0) - g_k_sqrd * ( last_initial_pos * theta_f(g_dt * (current_step - 1 + xtra_step_size), left_wghts_nds ) ) + ( (right_noise/g_k) / sqrt(theta_norm) ) - g_k_sqrd*trap_xtra(extern_temp_last_vel,theta, current_step, theta_norm, coeff, xtra_step_size, shifted_theta, right_wghts_nds) ;
     extern_temp_last_vel[current_step - 1] = hold_extern_temp_last_vel;
 
 

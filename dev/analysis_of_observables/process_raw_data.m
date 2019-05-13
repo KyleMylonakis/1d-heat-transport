@@ -4,18 +4,26 @@ import Sample.*
 
 %% Import Data
 % fprintf('Loading Data \n');
-n_systems = 2;
-base_n_part = 16;
-for j = 2:n_systems %final j should be 11
-    n_part = num2str(base_n_part + (j-1)*100);
-    pos_file = strcat( './', n_part, '/pos_samp.csv');
-    vel_file = strcat( './', n_part, '/vel_samp.csv');
-    fprintf('Loading Data\n');
-    data = Sample(base_n_part + (j-1)*100, ...
-            csvread(pos_file), csvread(vel_file)).prepare_to_save();
-    save(strcat(n_part, '_observables'), 'data');
-    
-end
+% n_systems = 2;
+% base_n_part = 16;
+% for j = 2:n_systems %final j should be 11
+%     n_part = num2str(base_n_part + (j-1)*100);
+%     pos_file = strcat( './', n_part, '/pos_samp.csv');
+%     vel_file = strcat( './', n_part, '/vel_samp.csv');
+%     fprintf('Loading Data\n');
+%     data = Sample(base_n_part + (j-1)*100, ...
+%             csvread(pos_file), csvread(vel_file)).prepare_to_save();
+%     save(strcat(n_part, '_observables'), 'data');
+%     
+% end
+
+pos_file = 'pos_samp.csv';
+vel_file = 'vel_samp.csv';
+fprintf('Loading Data\n');
+data = Sample( csvread(pos_file), csvread(vel_file)).prepare_to_save();
+save(strcat(num2str(data.m_n_particles), '_observables'), 'data');
+
+
     
 %  samples = [
 %  Sample(16, csvread('./16/pos_samp.csv'), csvread('./16/vel_samp.csv') )

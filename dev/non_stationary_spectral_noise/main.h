@@ -13,7 +13,7 @@
 // Initialize the constants
 extern const double g_dt {0.001}; // Time step of the simulation
 const int dt_inv {static_cast<int>(1/g_dt)};      // Must be 1/dt as an int
-const int t_max {100};        // Final time of the simulation
+const int t_max {10000};        // Final time of the simulation
 extern const double g_k_sqrd {156*pow(2,-7.0/3.0) - 42*pow(2, -4.0/3.0) }; // Coming from the second derivative of the Lennard Jones 
 extern const double g_k {sqrt(g_k_sqrd)}; // Coming from the second derivative of the Lennard Jones 
 extern const double a0 {pow(2,1.0/6.0)}; // Equilibrium spacing
